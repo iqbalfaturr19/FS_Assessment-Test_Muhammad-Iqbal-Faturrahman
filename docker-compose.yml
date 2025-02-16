@@ -1,3 +1,5 @@
+version: '3.8'
+
 services:
   db:
     image: postgres
@@ -25,6 +27,17 @@ services:
     volumes:
       - .:/app
     command: ["uvicorn", "backend.main:app", "--host", "0.0.0.0", "--port", "8000"]
+
+  frontend:
+    build: ./frontend
+    container_name: todo-app-frontend
+    ports:
+      - "5173:5173"
+    volumes:
+      - ./frontend:/app
+    command: ["npm", "run", "dev"]
+    depends_on:
+      - app
 
 volumes:
   postgres_data:

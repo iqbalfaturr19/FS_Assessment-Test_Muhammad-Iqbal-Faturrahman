@@ -44,9 +44,17 @@ function App() {
 
   
   const handleDeleteTask = async (id) => {
-    await deleteTask(id);
-    fetchTasks();
-  };
+    const isConfirmed = window.confirm("Apakah Anda yakin ingin menghapus tugas ini?");
+    
+    if (!isConfirmed) return;
+
+    try {
+      await deleteTask(id);
+      fetchTasks();
+    } catch (error) {
+      console.error("Error deleting task:", error);
+    }
+};
 
    const handleCancel = () => {
     setTaskInput("");
@@ -177,13 +185,7 @@ function App() {
                   <Pencil className="w-4 h-4 text-black cursor-pointer hover:text-gray-900" onClick={() => handleEdit(task)}/>
                 </div>
                 <p className="text-xs text-black whitespace-nowrap mt-1">
-                  {new Date(task.created_at).toLocaleString("id-ID", {
-                    day: "2-digit",
-                    month: "long",
-                    year: "numeric",
-                    hour: "2-digit",
-                    minute: "2-digit",
-                  })}
+                  {formatDateWIB(task.created_at)}
                 </p>
               </div>
               <div className="flex">
