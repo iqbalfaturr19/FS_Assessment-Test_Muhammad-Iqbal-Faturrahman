@@ -1,7 +1,5 @@
 import { useState, useEffect  } from 'react'
 import { Pencil, Trash2, CircleX, CircleCheck  } from "lucide-react";
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
 import './App.css'
 import { 
   getTodoTasks, 
@@ -10,7 +8,6 @@ import {
   updateTask, 
   deleteTask 
 } from "./api";
-import axios from "axios";
 
 function App() {
   const [todoTasks, setTodoTasks] = useState([]);
@@ -23,7 +20,6 @@ function App() {
     fetchTasks();
   }, []);
 
-  // 🔄 Ambil semua task dari backend
   const fetchTasks = async () => {
     const todoData = await getTodoTasks();
     const completedData = await getCompletedTasks();
@@ -31,33 +27,32 @@ function App() {
     setCompletedTasks(completedData);
   };
 
-  // ➕ Tambah Task Baru
   const handleAddTask = async () => {
     
-    if (!taskInput.trim()) return; // Cegah pengiriman task kosong
-    
+    if (!taskInput.trim()){
+      alert("Task tidak boleh kosong!");
+      return;
+    }
     try {
-      await addTask({ title: taskInput, completed: false }); // Kirim data yang benar
-      fetchTasks(); // Refresh daftar task
-      setTaskInput(""); // Reset input setelah berhasil ditambahkan
+      await addTask({ title: taskInput, completed: false });
+      fetchTasks();
+      setTaskInput("");
     } catch (error) {
       console.error("Error adding task:", error);
     }
   };
 
-  // ❌ Hapus Task
+  
   const handleDeleteTask = async (id) => {
     await deleteTask(id);
     fetchTasks();
   };
 
-   // Fungsi untuk membatalkan edit
    const handleCancel = () => {
     setTaskInput("");
     setEditingTaskId(null);
   };
 
-  // 🔄 Edit Task
   const handleEdit = (task) => {
     setTaskInput(task.title);
     setEditingTaskId(task.id);
@@ -65,37 +60,54 @@ function App() {
   };
   
   const handleUpdate = async () => {
-    if (!editingTaskId) return;
+    if (!editingTaskId){
+      alert("Task tidak ditemukan");
+      return;
+    }
   
     try {
-      await updateTask(editingTaskId, { title: taskInput, completed: taskStatus }); // Sesuaikan dengan API
-      fetchTasks(); // Ambil ulang daftar tugas setelah update
-      setTaskInput(""); // Kosongkan input
-      setEditingTaskId(null); // Reset mode edit
+      await updateTask(editingTaskId, { title: taskInput, completed: taskStatus });
+      fetchTasks();
+      setTaskInput("");
+      setEditingTaskId(null);
     } catch (error) {
       console.error("Error updating task:", error);
     }
   };
 
-  // ✅ Tandai Task sebagai Selesai
   const handleCompleteTask = async (task) => {
     try {
       await updateTask(task.id, { 
         title: task.title, 
-        completed: !task.completed // Toggle status completed
+        completed: !task.completed
       });
-      fetchTasks(); // Refresh daftar task setelah update
+      fetchTasks();
     } catch (error) {
       console.error("Error updating task:", error);
     }
-};
+  };
+
+  const formatDateWIB = (dateStr) => {
+    const date = new Date(dateStr);
+    date.setHours(date.getHours() + 7);
+
+    const options = { 
+      day: "2-digit", 
+      month: "long", 
+      year: "numeric", 
+      hour: "2-digit", 
+      minute: "2-digit", 
+      hour12: false 
+    };
+    
+    return date.toLocaleString("id-ID", options);
+  };
 
   return (
     <div className="flex items-center bg-white w-screen justify-center min-h-screen bg-gray-100">
       <div className="w-106 p-6">
         <h1 className="text-5xl font-normal text-center mb-4 text-black">Task Management</h1>
 
-        {/* Input & Button */}
         <label className="block mb-2 text-sm font-medium text-black">Title</label>
         <div className="flex gap-2 mb-4">
           <input
@@ -128,7 +140,6 @@ function App() {
           )}
         </div>
 
-        {/* List Tugas */}
         <label className="block mb-2 text-sm font-bold text-black">Ongoing Task</label>
         <div className="space-y-2">
           {todoTasks.map((task) => (
@@ -141,7 +152,9 @@ function App() {
                   <p className="">{task.title}</p>
                   <Pencil className="w-4 h-4 text-black cursor-pointer hover:text-gray-900" onClick={() => handleEdit(task)}/>
                 </div>
-                <p className="text-xs text-black whitespace-nowrap mt-1">{task.created_at}</p>
+                <p className="text-xs text-black whitespace-nowrap mt-1">
+                {formatDateWIB(task.created_at)}
+                </p>
               </div>
               <div className="flex">
                 <CircleX  className="w-4 h-4 text-black cursor-pointer hover:text-gray-900" onClick={() => handleDeleteTask(task.id)}/>
@@ -151,7 +164,6 @@ function App() {
           ))}
         </div>
 
-        {/* List Completed */}
         <label className="block mb-2 mt-2 text-sm font-bold text-black">Completed Task</label>
         <div className="space-y-2">
           {completedTasks.map((task) => (
@@ -164,7 +176,15 @@ function App() {
                   <p className="line-through">{task.title}</p>
                   <Pencil className="w-4 h-4 text-black cursor-pointer hover:text-gray-900" onClick={() => handleEdit(task)}/>
                 </div>
-                <p className="text-xs text-black whitespace-nowrap mt-1">{task.created_at}</p>
+                <p className="text-xs text-black whitespace-nowrap mt-1">
+                  {new Date(task.created_at).toLocaleString("id-ID", {
+                    day: "2-digit",
+                    month: "long",
+                    year: "numeric",
+                    hour: "2-digit",
+                    minute: "2-digit",
+                  })}
+                </p>
               </div>
               <div className="flex">
                 <CircleX  className="w-4 h-4 text-black cursor-pointer hover:text-gray-900" onClick={() => handleDeleteTask(task.id)}/>
